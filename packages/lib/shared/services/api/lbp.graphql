@@ -10,8 +10,15 @@ query GetLbpPriceInfo(
     chain: $chain,
     id: $poolId,
   ) {
-    intervalTimestamp
-    projectTokenPrice # in reserve token
-    reservePrice # in USD
+    timestamp
+    intervalTimestamp   # (deprecated, but still non-null)
+    projectTokenPrice
+    reservePrice
+    volume
+    buyVolume
+    sellVolume
+    swapCount
+    tvl
+    fees
   }
 }
