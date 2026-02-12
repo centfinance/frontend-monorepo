@@ -4,9 +4,8 @@ import {
   GetTokensQuery,
   GetTokensQueryVariables,
   GqlChain,
-  GqlPoolToken,
   GqlPoolTokenDetail,
-  GqlPoolTokenExpanded,
+  GqlToken,
   GqlTokenPrice,
 } from '@repo/lib/shared/services/api/generated/graphql'
 import {
@@ -76,7 +75,7 @@ export function someMinimalTokensMock(addresses?: Address[]): MinimalToken[] {
   return addresses.map((address, index) => ({ address, decimals: 18, index }))
 }
 
-export function aGqlTokenMock(...options: Partial<GqlPoolToken>[]): GqlPoolTokenDetail {
+export function aGqlTokenMock(...options: Partial<GqlToken>[]): GqlPoolTokenDetail {
   const symbol = options[0].symbol
   const defaultToken: TokenBase = fakeTokenBySymbol((symbol as FakeTokenSymbol) || 'BAL')
   const defaultOptions: GqlPoolTokenDetail = mock<GqlPoolTokenDetail>({
@@ -91,21 +90,19 @@ export function someGqlTokenMocks(symbols: string[]): GqlPoolTokenDetail[] {
   return symbols.map(symbol => aGqlTokenMock({ symbol }))
 }
 
-export function aTokenExpandedMock(
-  ...options: Partial<GqlPoolTokenExpanded>[]
-): GqlPoolTokenExpanded {
+export function aTokenExpandedMock(...options: Partial<GqlToken>[]): GqlPoolTokenDetail {
   const symbol = (options[0]?.symbol as FakeTokenSymbol) || 'BAL'
   const defaultToken: TokenBase = fakeTokenBySymbol(symbol)
   return Object.assign({}, defaultToken, ...options)
 }
 export function aTokenExpandedBySymbolMock(
   symbol: FakeTokenSymbol,
-  ...options: Partial<GqlPoolTokenExpanded>[]
-): GqlPoolTokenExpanded {
+  ...options: Partial<GqlToken>[]
+): GqlPoolTokenDetail {
   return aTokenExpandedMock({ symbol }, ...options)
 }
 
-export function someTokenExpandedMock(addresses: Address[]): GqlPoolTokenExpanded[] {
+export function someTokenExpandedMock(addresses: Address[]): GqlPoolTokenDetail[] {
   return addresses.map(address => aTokenExpandedMock({ address }))
 }
 

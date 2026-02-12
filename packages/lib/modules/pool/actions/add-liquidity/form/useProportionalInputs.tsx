@@ -35,13 +35,27 @@ export function useProportionalInputs() {
   const { balances, isBalancesLoading } = useTokenBalances()
   const { isLoading: isPoolLoading, pool } = usePool()
 
-  const { data: poolStateWithBalances, isLoading: isPoolStateWithBalancesLoading } =
-    usePoolStateWithBalancesQuery(pool)
+  const {
+    data: poolStateWithBalances,
+    isLoading: isPoolStateWithBalancesLoading,
+    error: poolStateError,
+  } = usePoolStateWithBalancesQuery(pool)
+
+  // Log pool state query errors to help debug RPC issues
+  if (poolStateError) {
+    console.error('Pool state with balances query failed:', poolStateError)
+  }
 
   function handleProportionalHumanInputChange(token: ApiToken, humanAmount: HumanAmount) {
     const tokenAddress = token.address as Address
     if (isEmptyHumanAmount(humanAmount)) {
       return clearAmountsIn({ tokenAddress, humanAmount, symbol: token.symbol })
+    }
+
+    // Guard: pool state must be loaded before calculating proportional amounts
+    if (!poolStateWithBalances) {
+      console.warn('Pool state with balances not yet loaded, skipping proportional calculation')
+      return
     }
 
     setReferenceAmountAddress(tokenAddress)

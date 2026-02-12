@@ -1,5 +1,8 @@
 'use client'
 
+// Apply SDK patches for custom chains (must be imported before any SDK usage)
+import '../../sdk-patches'
+
 import {
   getBoostedPoolStateWithBalancesV3,
   getPoolStateWithBalancesCowAmm,
@@ -48,6 +51,7 @@ export function usePoolStateWithBalancesQuery(pool: Pool) {
     queryKey,
     queryFn,
     gcTime: 0,
+    retry: 2,
     meta: {
       poolId: pool.id,
       chainId,

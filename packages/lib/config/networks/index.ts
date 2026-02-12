@@ -12,6 +12,7 @@ import sepolia from './sepolia'
 import mode from './mode'
 import fraxtal from './fraxtal'
 import sonic from './sonic'
+import swellchainSepolia from './swellchain-sepolia'
 
 const networkConfigs = {
   [GqlChain.Arbitrum]: arbitrum,
@@ -27,6 +28,7 @@ const networkConfigs = {
   [GqlChain.Fraxtal]: fraxtal,
   [GqlChain.Fantom]: fantom,
   [GqlChain.Sonic]: sonic,
+  [GqlChain.SwellchainSepolia]: swellchainSepolia,
 }
 
 export default networkConfigs

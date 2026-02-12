@@ -12,6 +12,12 @@ import { allEqual } from '@repo/lib/shared/utils/array'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useUserAccount } from '@repo/lib/modules/web3/UserAccountProvider'
 
+type NetworkConfigChain = keyof typeof networkConfigs
+
+function isNetworkConfigChain(chainId: GqlChain): chainId is NetworkConfigChain {
+  return chainId in networkConfigs
+}
+
 export enum NetworkSyncState {
   Unsynced = 'Unsynced',
   Syncing = 'Syncing',
@@ -117,7 +123,9 @@ export function useCrossChainNetworks(
         return userAddress
       }
 
-      const layerZeroChainId = networkConfigs[chainId]?.layerZeroChainId
+      const layerZeroChainId = isNetworkConfigChain(chainId)
+        ? networkConfigs[chainId]?.layerZeroChainId
+        : undefined
       return layerZeroChainId
         ? omniEscrowMap?.[layerZeroChainId]?.remoteUser || userAddress
         : userAddress

@@ -1,6 +1,12 @@
 'use client'
 
-import { Chain } from '@rainbow-me/rainbowkit'
+import { Chain, defineChain } from 'viem'
+import { GqlChain } from '@repo/lib/shared/services/api/generated/graphql'
+import { keyBy } from 'lodash'
+import { getBaseUrl } from '@repo/lib/shared/utils/urls'
+import { PROJECT_CONFIG } from '@repo/lib/config/getProjectConfig'
+import { shouldUseAnvilFork } from '@repo/lib/config/app.config'
+import { defaultAnvilForkRpcUrl } from '@repo/lib/test/utils/wagmi/fork.helpers'
 import {
   arbitrum,
   avalanche,
@@ -16,17 +22,30 @@ import {
   sepolia,
   sonic,
 } from 'wagmi/chains'
-import { GqlChain } from '@repo/lib/shared/services/api/generated/graphql'
-import { keyBy } from 'lodash'
-import { getBaseUrl } from '@repo/lib/shared/utils/urls'
-import { PROJECT_CONFIG } from '@repo/lib/config/getProjectConfig'
-import { shouldUseAnvilFork } from '@repo/lib/config/app.config'
-import { defaultAnvilForkRpcUrl } from '@repo/lib/test/utils/wagmi/fork.helpers'
+
+// Custom chain definition for Swellchain Sepolia (not in wagmi/viem yet)
+const swellchainSepolia = defineChain({
+  id: 1924,
+  name: 'Swellchain Sepolia',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.ankr.com/swell_sepolia'] },
+  },
+  blockExplorers: {
+    default: { name: 'SwellchainScan', url: 'https://sepolia.swellchainscan.io' },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xcA11bde05977b3631167028862bE2a173976CA11',
+    },
+  },
+  testnet: true,
+})
 
 /* If a request with the default rpc fails, it will fall back to the next one in the list.
   https://viem.sh/docs/clients/transports/fallback#fallback-transport
 */
-export const rpcFallbacks: Record<GqlChain, string | undefined> = {
+export const rpcFallbacks: Partial<Record<GqlChain, string | undefined>> = {
   [GqlChain.Mainnet]: 'https://eth.llamarpc.com',
   [GqlChain.Arbitrum]: 'https://arbitrum.llamarpc.com',
   [GqlChain.Base]: 'https://base.llamarpc.com',
@@ -40,6 +59,7 @@ export const rpcFallbacks: Record<GqlChain, string | undefined> = {
   [GqlChain.Mode]: 'https://mode.drpc.org',
   [GqlChain.Fraxtal]: 'https://fraxtal.drpc.org',
   [GqlChain.Sonic]: 'https://rpc.soniclabs.com',
+  [GqlChain.SwellchainSepolia]: 'https://rpc.ankr.com/swell_sepolia',
 }
 
 const baseUrl = getBaseUrl()
@@ -49,7 +69,7 @@ const getPrivateRpcUrl = (chain: GqlChain) => {
   return `${baseUrl}/api/rpc/${chain}`
 }
 
-export const rpcOverrides: Record<GqlChain, string | undefined> = {
+export const rpcOverrides: Partial<Record<GqlChain, string | undefined>> = {
   [GqlChain.Mainnet]: getPrivateRpcUrl(GqlChain.Mainnet),
   [GqlChain.Arbitrum]: getPrivateRpcUrl(GqlChain.Arbitrum),
   [GqlChain.Base]: getPrivateRpcUrl(GqlChain.Base),
@@ -63,9 +83,12 @@ export const rpcOverrides: Record<GqlChain, string | undefined> = {
   [GqlChain.Mode]: getPrivateRpcUrl(GqlChain.Mode),
   [GqlChain.Fraxtal]: getPrivateRpcUrl(GqlChain.Fraxtal),
   [GqlChain.Sonic]: getPrivateRpcUrl(GqlChain.Sonic),
+  // Swellchain Sepolia not available on dRPC, use direct RPC from rpcFallbacks instead
 }
 
-const gqlChainToWagmiChainMap = {
+type ChainWithIcon = Chain & { iconUrl?: string }
+
+const gqlChainToWagmiChainMap: Partial<Record<GqlChain, ChainWithIcon>> = {
   [GqlChain.Mainnet]: { iconUrl: '/images/chains/MAINNET.svg', ...mainnet },
   [GqlChain.Arbitrum]: { iconUrl: '/images/chains/ARBITRUM.svg', ...arbitrum },
   [GqlChain.Base]: { iconUrl: '/images/chains/BASE.svg', ...base },
@@ -79,17 +102,22 @@ const gqlChainToWagmiChainMap = {
   [GqlChain.Mode]: { iconUrl: '/images/chains/MODE.svg', ...mode },
   [GqlChain.Fraxtal]: { iconUrl: '/images/chains/FRAXTAL.svg', ...fraxtal },
   [GqlChain.Sonic]: { iconUrl: '/images/chains/SONIC.svg', ...sonic },
-} as const satisfies Record<GqlChain, Chain>
+  [GqlChain.SwellchainSepolia]: {
+    iconUrl: '/images/chains/SWELLCHAIN_SEPOLIA.svg',
+    ...swellchainSepolia,
+  },
+}
 
 export const supportedNetworks = PROJECT_CONFIG.supportedNetworks
 const chainToFilter = PROJECT_CONFIG.defaultNetwork
-const customChain = gqlChainToWagmiChainMap[chainToFilter]
+const customChain = gqlChainToWagmiChainMap[chainToFilter]!
 
 export const chains: readonly [Chain, ...Chain[]] = [
   customChain,
   ...supportedNetworks
     .filter(chain => chain !== chainToFilter)
-    .map(gqlChain => gqlChainToWagmiChainMap[gqlChain]),
+    .map(gqlChain => gqlChainToWagmiChainMap[gqlChain]!)
+    .filter(Boolean),
 ]
 
 export const chainsByKey = keyBy(chains, 'id')

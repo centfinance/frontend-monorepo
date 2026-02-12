@@ -50,7 +50,7 @@ export function EcosystemActivityChart() {
   const legendTabs = PROJECT_CONFIG.supportedNetworks.map(key => {
     return {
       label: getChainShortName(key),
-      color: `linear-gradient(to bottom, ${gradientMap[key].from}, ${gradientMap[key].to})`,
+      color: `linear-gradient(to bottom, ${gradientMap[key]?.from || '#ccc'}, ${gradientMap[key]?.to || '#999'})`,
     }
   })
 

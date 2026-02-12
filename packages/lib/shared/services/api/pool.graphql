@@ -94,7 +94,6 @@ query GetPool($id: String!, $chain: GqlChain!, $userAddress: String) {
       }
     }
     ... on GqlPoolWeighted {
-      nestingType
       poolTokens {
         ...PoolTokens
       }
@@ -121,7 +120,6 @@ query GetPool($id: String!, $chain: GqlChain!, $userAddress: String) {
     }
     ... on GqlPoolComposableStable {
       amp
-      nestingType
       bptPriceRate
       poolTokens {
         ...PoolTokens
@@ -129,7 +127,6 @@ query GetPool($id: String!, $chain: GqlChain!, $userAddress: String) {
     }
     ... on GqlPoolLiquidityBootstrapping {
       name
-      nestingType
       poolTokens {
         ...PoolTokens
       }
@@ -171,7 +168,6 @@ query GetPool($id: String!, $chain: GqlChain!, $userAddress: String) {
       v
       w
       z
-      nestingType
       poolTokens {
         ...PoolTokens
       }
@@ -217,17 +213,8 @@ query GetPoolSnapshots($poolId: String!, $range: GqlPoolSnapshotDataRange!, $cha
   }
 }
 
-query GetPoolTokensDynamicData($addresses: [String!]!) {
-  staticData: tokenGetTokensData(addresses: $addresses) {
-    id
-    tokenAddress
-    description
-    discordUrl
-    telegramUrl
-    twitterUsername
-    websiteUrl
-  }
-  dynamicData: tokenGetTokensDynamicData(addresses: $addresses) {
+query GetPoolTokensDynamicData($addresses: [String!]!, $chain: GqlChain!) {
+  dynamicData: tokenGetTokensDynamicData(addresses: $addresses, chain: $chain) {
     ...GqlTokenDynamicData
   }
 }
@@ -235,20 +222,18 @@ query GetPoolTokensDynamicData($addresses: [String!]!) {
 query GetPoolEvents(
   $first: Int
   $skip: Int
-  $poolIdIn: [String!]!
-  $chainIn: [GqlChain!]!
-  $range: GqlPoolEventsDataRange
-  $typeIn: [GqlPoolEventType]
+  $poolId: String
+  $chainIn: [GqlChain!]
+  $type: GqlPoolEventType
   $userAddress: String
 ) {
   poolEvents(
     first: $first
     skip: $skip
     where: {
-      poolIdIn: $poolIdIn
+      poolId: $poolId
       chainIn: $chainIn
-      range: $range
-      typeIn: $typeIn
+      type: $type
       userAddress: $userAddress
     }
   ) {

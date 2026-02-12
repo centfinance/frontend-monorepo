@@ -1,10 +1,4 @@
-import {
-  balAddress,
-  usdcDaiUsdtBptAddress,
-  poolId,
-  wETHAddress,
-  wjAuraAddress,
-} from '@repo/lib/debug-helpers'
+import { usdcDaiUsdtBptAddress, poolId, wETHAddress, wjAuraAddress } from '@repo/lib/debug-helpers'
 import {
   aTokenExpandedMock,
   someGqlTokenMocks,
@@ -12,7 +6,6 @@ import {
 import {
   GqlChain,
   GqlPoolElement,
-  GqlPoolNestingType,
   GqlPoolTokenDetail,
   GqlPoolType,
   GqlPoolWeighted,
@@ -59,7 +52,6 @@ export function toGqlWeighedPoolMock(poolElement: GqlPoolElement): GqlPoolWeight
   const pool: GqlPoolWeighted = {
     ...poolElement,
     __typename: 'GqlPoolWeighted',
-    nestingType: GqlPoolNestingType.NoNesting,
   }
   return pool
 }
@@ -75,14 +67,6 @@ export function aGqlPoolElementMock(...options: Partial<GqlPoolElement>[]): GqlP
     chain: GqlChain.Mainnet,
     createTime: 1620153071,
     decimals: 18,
-    displayTokens: [
-      {
-        address: balAddress,
-      },
-      {
-        address: wETHAddress,
-      },
-    ],
     dynamicData: {
       totalLiquidity: '176725796.079429',
       totalShares: '13131700.67391808961378162',
@@ -93,11 +77,7 @@ export function aGqlPoolElementMock(...options: Partial<GqlPoolElement>[]): GqlP
       holdersCount: '1917',
       swapFee: '0.01',
       swapsCount: '58991',
-      apr: {
-        apr: {
-          total: '0.05',
-        },
-      },
+      aprItems: [],
     },
     factory: '0xa5bf2ddf098bb0ef6d120c98217dd6b141c74ee0',
     id: '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014',
@@ -115,7 +95,7 @@ export function aNested50Weth503Pool(...options: Partial<GqlPoolElement>[]): Gql
     aTokenExpandedMock({
       address: usdcDaiUsdtBptAddress, // 3POOL-BPT
     }),
-    aTokenExpandedMock({ symbol: 'WETH', isMainToken: true }),
+    aTokenExpandedMock({ symbol: 'WETH' }),
   ]
 
   const defaultOptions: Partial<GqlPoolElement> = {

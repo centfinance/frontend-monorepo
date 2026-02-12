@@ -27,6 +27,9 @@ export const shouldUseAnvilFork = !!process.env.NEXT_PUBLIC_E2E_DEV
 
 const networksByChainId = keyBy(config.networks, 'chainId')
 
+// First available network as a safe fallback
+const firstNetworkConfig = Object.values(config.networks).find(Boolean) as NetworkConfig
+
 /**
  * Fetches network config by chainId or network name type from API (GqlChain). If chain
  * param is not provided or incorrect, it will return the defaultNetwork config.
@@ -36,13 +39,15 @@ export function getNetworkConfig(
   defaultNetwork?: GqlChain
 ): NetworkConfig {
   // cannot get default network directly from config here
-  if (!chain) return config.networks[defaultNetwork || GqlChain.Mainnet]
-
-  if (typeof chain === 'number') {
-    return networksByChainId[chain] || config.networks.MAINNET
+  if (!chain) {
+    return config.networks[defaultNetwork || GqlChain.SwellchainSepolia] || firstNetworkConfig
   }
 
-  return config.networks[chain]
+  if (typeof chain === 'number') {
+    return networksByChainId[chain] || firstNetworkConfig
+  }
+
+  return config.networks[chain] || firstNetworkConfig
 }
 
 export function getChainId(gqlChain: GqlChain): SupportedChainId {

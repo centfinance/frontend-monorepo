@@ -37,9 +37,9 @@ export type ChartInfoMetaData = {
 
 type ChartEl = [number, string, ChartInfoMetaData]
 
-export type ChartInfo = Record<GqlChain, ChartEl[]>
+export type ChartInfo = Partial<Record<GqlChain, ChartEl[]>>
 
-export const gradientMap: Record<GqlChain, { from: string; to: string }> = {
+export const gradientMap: Partial<Record<GqlChain, { from: string; to: string }>> = {
   [GqlChain.Arbitrum]: {
     from: '#6C80A7',
     to: '#2D374B',
@@ -94,7 +94,7 @@ export const gradientMap: Record<GqlChain, { from: string; to: string }> = {
   },
 }
 
-function getDefaultChainMeta() {
+function getDefaultChainMeta(): Partial<Record<GqlChain, ChartEl[]>> {
   return {
     [GqlChain.Mainnet]: [],
     [GqlChain.Arbitrum]: [],
@@ -109,6 +109,7 @@ function getDefaultChainMeta() {
     [GqlChain.Mode]: [],
     [GqlChain.Sepolia]: [],
     [GqlChain.Sonic]: [],
+    [GqlChain.SwellchainSepolia]: [],
   }
 }
 
@@ -370,7 +371,7 @@ export function useEcosystemPoolActivityChart() {
 
       const chartYAxisValue = Math.sqrt(Number(usdValue))
 
-      acc[chain].push([
+      ;(acc[chain] ||= []).push([
         timestamp,
         chartYAxisValue.toString(),
         { userAddress, tokens, usdValue, tx, chain, type },
@@ -390,7 +391,7 @@ export function useEcosystemPoolActivityChart() {
     )
 
     const total = Object.keys(chartData).reduce((acc, chain) => {
-      return acc + chartData[chain as GqlChain].length
+      return acc + (chartData[chain as GqlChain]?.length || 0)
     }, 0)
 
     return { total, elapsedMinutes }
@@ -404,11 +405,11 @@ export function useEcosystemPoolActivityChart() {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             {
               offset: 0,
-              color: gradientMap[chain].from,
+              color: gradientMap[chain]?.from || '#ccc',
             },
             {
               offset: 1,
-              color: gradientMap[chain].to,
+              color: gradientMap[chain]?.to || '#999',
             },
           ]),
         },
@@ -417,7 +418,7 @@ export function useEcosystemPoolActivityChart() {
           scale: 1.5,
         },
         symbolSize: getSymbolSize,
-        data: chartData[chain],
+        data: chartData[chain] || [],
         type: 'scatter',
       }
     })

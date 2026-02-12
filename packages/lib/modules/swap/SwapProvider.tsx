@@ -2,6 +2,8 @@
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
+import '../pool/actions/sdk-patches'
+
 import { ApolloClient, useApolloClient, useReactiveVar } from '@apollo/client'
 import { HumanAmount } from '@balancer/sdk'
 import { useDisclosure } from '@chakra-ui/react'
@@ -155,16 +157,20 @@ export function useSwapLogic({ poolActionableTokens, pool, pathParams }: SwapPro
   const tokenInInfo = getToken(swapState.tokenIn.address, selectedChain)
   const tokenOutInfo = getToken(swapState.tokenOut.address, selectedChain)
 
-  if (
-    (isTokenInSet && !tokenInInfo && !isPoolSwap) ||
-    (isTokenOutSet && !tokenOutInfo && !isPoolSwap)
-  ) {
-    try {
-      setDefaultTokens()
-    } catch {
-      throw new Error('Token metadata not found')
+  // If persisted tokens are no longer found in the API (e.g., chain changed),
+  // reset to defaults. This must be in a useEffect to avoid infinite re-render loops.
+  const [hasResetTokens, setHasResetTokens] = useState(false)
+  useEffect(() => {
+    if (hasResetTokens || isPoolSwap) return
+    if ((isTokenInSet && !tokenInInfo) || (isTokenOutSet && !tokenOutInfo)) {
+      try {
+        setDefaultTokens()
+      } catch {
+        // Token metadata not found - ignore silently
+      }
+      setHasResetTokens(true)
     }
-  }
+  }, [isTokenInSet, isTokenOutSet, tokenInInfo, tokenOutInfo, isPoolSwap, hasResetTokens])
 
   const tokenInUsd = usdValueForToken(tokenInInfo, swapState.tokenIn.amount)
   const tokenOutUsd = usdValueForToken(tokenOutInfo, swapState.tokenOut.amount)

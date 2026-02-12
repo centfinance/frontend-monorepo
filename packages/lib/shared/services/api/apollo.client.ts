@@ -8,8 +8,12 @@ const defaultHeaders = {
 }
 
 export function createApolloClient() {
+  // On the client side, use the Next.js rewrite proxy to avoid CORS issues.
+  // On the server side, call the API directly.
+  const uri = typeof window === 'undefined' ? config.apiUrl : '/api/graphql'
+
   const httpLink = new HttpLink({
-    uri: config.apiUrl,
+    uri,
     headers: defaultHeaders,
   })
 

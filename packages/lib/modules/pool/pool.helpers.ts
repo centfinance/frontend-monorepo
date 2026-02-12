@@ -4,7 +4,6 @@ import {
   GqlHookType,
   GqlPoolBase,
   GqlPoolGyro,
-  GqlPoolNestingType,
   GqlPoolStakingGauge,
   GqlPoolStakingOtherGauge,
   GqlPoolTokenDetail,
@@ -219,13 +218,8 @@ export function getPoolHelpers(pool: Pool, chain: GqlChain) {
 
 export function hasNestedPools(pool: Pool) {
   if (!pool.poolTokens) return false
-  // The following discriminator is needed because not all pools in GqlPoolQuery do have nestingType property
-  // and the real TS discriminator is __typename which we don't want to use
-  return (
-    ('nestingType' in pool && pool.nestingType !== GqlPoolNestingType.NoNesting) ||
-    // stable pools don't have nestingType but they can have nested pools in v3
-    pool.poolTokens.some(token => token.hasNestedPool)
-  )
+  // Check if pool has nested pools via poolTokens
+  return pool.poolTokens.some(token => token.hasNestedPool)
 }
 
 export function isNotSupported(pool: Pool) {

@@ -1,5 +1,8 @@
 'use client'
 
+// Apply SDK patches for custom chains (must be imported before any SDK usage)
+import '../sdk-patches'
+
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { useTokens } from '@repo/lib/modules/tokens/TokensProvider'

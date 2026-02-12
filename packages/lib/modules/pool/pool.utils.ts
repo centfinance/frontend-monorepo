@@ -4,7 +4,6 @@ import {
   GqlChain,
   GqlPoolAprItem,
   GqlPoolAprItemType,
-  GqlPoolComposableStableNested,
   GqlPoolTokenDetail,
   GqlPoolType,
 } from '@repo/lib/shared/services/api/generated/graphql'
@@ -41,10 +40,11 @@ export enum ChainSlug {
   Mode = 'mode',
   Fraxtal = 'fraxtal',
   Sonic = 'sonic',
+  SwellchainSepolia = 'swellchain-sepolia',
 }
 
 // Maps GraphQL chain enum to URL slug
-export const chainToSlugMap: Record<GqlChain, ChainSlug> = {
+export const chainToSlugMap: Partial<Record<GqlChain, ChainSlug>> = {
   [GqlChain.Mainnet]: ChainSlug.Ethereum,
   [GqlChain.Arbitrum]: ChainSlug.Arbitrum,
   [GqlChain.Polygon]: ChainSlug.Polygon,
@@ -58,6 +58,7 @@ export const chainToSlugMap: Record<GqlChain, ChainSlug> = {
   [GqlChain.Mode]: ChainSlug.Mode,
   [GqlChain.Fraxtal]: ChainSlug.Fraxtal,
   [GqlChain.Sonic]: ChainSlug.Sonic,
+  [GqlChain.SwellchainSepolia]: ChainSlug.SwellchainSepolia,
 }
 
 export function getChainSlug(chainSlug: ChainSlug): GqlChain {
@@ -233,11 +234,8 @@ export const poolMouseEnterHandler = (
   router.prefetch(poolPath)
 }
 
-export function isComposableStablePool(pool: GetPoolQuery['pool'] | GqlPoolComposableStableNested) {
-  return (
-    pool.__typename === 'GqlPoolComposableStable' ||
-    pool.__typename == 'GqlPoolComposableStableNested'
-  )
+export function isComposableStablePool(pool: GetPoolQuery['pool']) {
+  return pool.__typename === 'GqlPoolComposableStable'
 }
 
 export function getProportionalExitAmountsForBptIn(

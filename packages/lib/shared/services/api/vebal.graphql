@@ -1,6 +1,6 @@
 query GetVeBalUser(
   $address: String!,
-  $chain: GqlChain
+  $chain: GqlChain!
 ) {
   veBalGetUser(
     address: $address,

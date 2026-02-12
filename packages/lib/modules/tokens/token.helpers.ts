@@ -145,7 +145,7 @@ function getTokenOrUnderlying(token: PoolToken): ApiToken {
 export function getSpenderForAddLiquidity(pool: Pool): Address {
   if (isCowAmmPool(pool.type)) return pool.address as Address
   if (isV3Pool(pool)) {
-    const permit2Address = getNetworkConfig(pool.chain).contracts.permit2
+    const permit2Address = getNetworkConfig(pool.chain)?.contracts?.permit2
     if (!permit2Address) {
       throw new Error(`Permit2 feature is not yet available for this chain (${pool.chain}) `)
     }
@@ -156,7 +156,7 @@ export function getSpenderForAddLiquidity(pool: Pool): Address {
 }
 
 export function getSpenderForCreatePool(chain: GqlChain): Address {
-  const permit2Address = getNetworkConfig(chain).contracts.permit2
+  const permit2Address = getNetworkConfig(chain)?.contracts?.permit2
   if (!permit2Address) {
     throw new Error(`Permit2 feature is not yet available for this chain (${chain}) `)
   }

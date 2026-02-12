@@ -15,7 +15,7 @@ import {
 } from 'viem/chains'
 import { GqlChain } from '../services/api/generated/graphql'
 
-const chainToDrpcName: Record<GqlChain, string | undefined> = {
+const chainToDrpcName: Partial<Record<GqlChain, string | undefined>> = {
   [GqlChain.Mainnet]: 'ethereum',
   [GqlChain.Arbitrum]: 'arbitrum',
   [GqlChain.Optimism]: 'optimism',
@@ -29,6 +29,7 @@ const chainToDrpcName: Record<GqlChain, string | undefined> = {
   [GqlChain.Mode]: 'mode',
   [GqlChain.Zkevm]: 'polygon-zkevm',
   [GqlChain.Sonic]: 'sonic',
+  // Swellchain Sepolia not available on dRPC
 }
 
 const chainIdToDrpcName: Record<number, string | undefined> = {

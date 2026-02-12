@@ -2,7 +2,6 @@ import {
   GqlChain,
   GetPoolEventsDocument,
   GqlPoolEventType,
-  GqlPoolEventsDataRange,
   GetPoolEventsQuery,
 } from '@repo/lib/shared/services/api/generated/graphql'
 import { FetchPolicy } from '@apollo/client'
@@ -16,25 +15,24 @@ type PoolEventsProps = {
   chainIn?: GqlChain[]
   first?: number
   skip?: number
-  range?: GqlPoolEventsDataRange
-  typeIn?: GqlPoolEventType[]
+  type?: GqlPoolEventType
   userAddress?: string
 }
 
 export function usePoolEvents(
-  { poolIdIn, chainIn, first, skip, range, typeIn, userAddress }: PoolEventsProps,
+  { poolIdIn, chainIn, first, skip, type, userAddress }: PoolEventsProps,
   opts: { skip?: boolean; fetchPolicy?: FetchPolicy } = {}
 ) {
-  const poolIds = (poolIdIn || []).map(id => id.toLowerCase())
+  // Use the first pool ID if provided (API accepts single poolId)
+  const poolId = poolIdIn?.[0]?.toLowerCase()
 
   return useQuery(GetPoolEventsDocument, {
     variables: {
-      poolIdIn: poolIds,
+      poolId,
       chainIn: chainIn || [],
       first,
       skip,
-      range,
-      typeIn,
+      type,
       userAddress,
     },
     ...opts,

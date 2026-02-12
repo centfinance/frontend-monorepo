@@ -10,8 +10,11 @@
 import { getApolloServerClient } from '@repo/lib/shared/services/api/apollo-server.client'
 import {
   GetProtocolStatsDocument,
+  GetProtocolStatsQuery,
   GetTokenPricesDocument,
+  GetTokenPricesQuery,
   GetTokensDocument,
+  GetTokensQuery,
 } from '@repo/lib/shared/services/api/generated/graphql'
 import { TokensProvider } from '@repo/lib/modules/tokens/TokensProvider'
 import { FiatFxRatesProvider } from '../../hooks/FxRatesProvider'
@@ -39,39 +42,63 @@ export async function ApolloGlobalDataProvider({ children }: PropsWithChildren) 
     chains: PROJECT_CONFIG.supportedNetworks,
   }
 
-  const { data: tokensQueryData } = await client.query({
-    query: GetTokensDocument,
-    variables: tokensQueryVariables,
-    context: {
-      fetchOptions: {
-        next: { revalidate: mins(20).toSecs() },
+  // Wrap all API queries in try/catch to make SSR resilient to backend failures
+  // (e.g. database connection pool exhaustion)
+  let tokensQueryData = { __typename: 'Query' as const, tokens: [] } as GetTokensQuery
+  try {
+    const result = await client.query({
+      query: GetTokensDocument,
+      variables: tokensQueryVariables,
+      context: {
+        fetchOptions: {
+          next: { revalidate: mins(20).toSecs() },
+        },
       },
-    },
-  })
+    })
+    tokensQueryData = result.data
+  } catch (e) {
+    console.debug('Failed to fetch tokens (non-fatal):', e)
+  }
 
-  const { data: tokenPricesQueryData } = await client.query({
-    query: GetTokenPricesDocument,
-    variables: {
-      chains: PROJECT_CONFIG.supportedNetworks,
-    },
-    context: {
-      fetchOptions: {
-        next: { revalidate: mins(10).toSecs() },
+  let tokenPricesQueryData = {
+    __typename: 'Query' as const,
+    tokenPrices: [],
+  } as GetTokenPricesQuery
+  try {
+    const result = await client.query({
+      query: GetTokenPricesDocument,
+      variables: {
+        chains: PROJECT_CONFIG.supportedNetworks,
       },
-    },
-  })
+      context: {
+        fetchOptions: {
+          next: { revalidate: mins(10).toSecs() },
+        },
+      },
+    })
+    tokenPricesQueryData = result.data
+  } catch (e) {
+    console.debug('Failed to fetch token prices (non-fatal):', e)
+  }
 
-  const { data: protocolData } = await client.query({
-    query: GetProtocolStatsDocument,
-    variables: {
-      chains: PROJECT_CONFIG.networksForProtocolStats || PROJECT_CONFIG.supportedNetworks,
-    },
-    context: {
-      fetchOptions: {
-        next: { revalidate: mins(10).toSecs() },
+  let protocolData: GetProtocolStatsQuery | undefined
+  try {
+    const result = await client.query({
+      query: GetProtocolStatsDocument,
+      variables: {
+        chains: PROJECT_CONFIG.networksForProtocolStats || PROJECT_CONFIG.supportedNetworks,
       },
-    },
-  })
+      context: {
+        fetchOptions: {
+          next: { revalidate: mins(10).toSecs() },
+        },
+      },
+    })
+    protocolData = result.data
+  } catch (e) {
+    console.debug('Failed to fetch protocol stats (non-fatal):', e)
+    protocolData = undefined
+  }
 
   const [
     exchangeRates,

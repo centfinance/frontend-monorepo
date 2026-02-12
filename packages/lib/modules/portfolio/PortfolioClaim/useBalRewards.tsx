@@ -1,5 +1,4 @@
-import { getChainId } from '@repo/lib/config/app.config'
-import networkConfigs from '@repo/lib/config/networks'
+import { getChainId, getNetworkConfig } from '@repo/lib/config/app.config'
 import { bn } from '@repo/lib/shared/utils/numbers'
 import BigNumber from 'bignumber.js'
 import { useMemo } from 'react'
@@ -87,7 +86,7 @@ export function useBalTokenRewards(pools: ClaimablePool[]) {
         const gaugeAddress = contractCall.address as Address
         const pool = poolByGaugeMap[gaugeAddress]
         if (!pool) return
-        const balTokenAddress = networkConfigs[pool.chain].tokens.addresses.bal
+        const balTokenAddress = getNetworkConfig(pool.chain).tokens.addresses.bal
         const tokenPrice = balTokenAddress ? priceFor(balTokenAddress, pool.chain) : 0
         const fiatBalance = tokenPrice
           ? bn(formatUnits(balance, BPT_DECIMALS)).multipliedBy(tokenPrice)
@@ -100,7 +99,7 @@ export function useBalTokenRewards(pools: ClaimablePool[]) {
           decimals: BPT_DECIMALS,
           humanBalance: formatUnits(balance, BPT_DECIMALS) || '0',
           fiatBalance,
-          tokenAddress: networkConfigs[pool.chain].tokens.addresses.bal,
+          tokenAddress: getNetworkConfig(pool.chain).tokens.addresses.bal,
         }
       })
       .filter(Boolean) as BalTokenReward[]

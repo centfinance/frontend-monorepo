@@ -24,6 +24,16 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ['@repo/lib'],
 
+  // Proxy client-side GraphQL requests to the backend API to avoid CORS issues
+  async rewrites() {
+    return [
+      {
+        source: '/api/graphql',
+        destination: process.env.NEXT_PUBLIC_BALANCER_API_URL || 'http://localhost:4000/graphql',
+      },
+    ]
+  },
+
   // Safe App setup
   headers: manifestHeaders,
 }

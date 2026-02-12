@@ -17,9 +17,11 @@ import { useLayerZeroTxLinks } from './useLayerZeroTxLinks'
 import { secs } from '@repo/lib/shared/utils/time'
 import { useUserAccount } from '@repo/lib/modules/web3/UserAccountProvider'
 
-const veBalSyncSupportedNetworks: GqlChain[] = Object.keys(networkConfigs)
-  .filter(key => networkConfigs[key as keyof typeof networkConfigs].supportsVeBalSync)
-  .map(key => key) as GqlChain[]
+type NetworkConfigChain = keyof typeof networkConfigs
+
+const veBalSyncSupportedNetworks = (Object.keys(networkConfigs) as NetworkConfigChain[]).filter(
+  chain => networkConfigs[chain].supportsVeBalSync
+)
 
 const REFETCH_INTERVAL = secs(30).toMs()
 
@@ -104,7 +106,7 @@ export const useCrossChainSyncLogic = () => {
   const networksSyncState = useMemo(() => {
     return veBalSyncSupportedNetworks.reduce<Partial<Record<GqlChain, NetworkSyncState>>>(
       (acc, network) => {
-        acc[network] = getNetworkSyncState({
+        acc[network as GqlChain] = getNetworkSyncState({
           omniEscrowLock: omniEscrowLocksMap?.[networkConfigs[network].layerZeroChainId || ''],
           mainnetEscrowLock,
         })

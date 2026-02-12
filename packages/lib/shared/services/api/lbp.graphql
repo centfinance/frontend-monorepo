@@ -20,5 +20,9 @@ query GetLbpPriceInfo(
     swapCount
     tvl
     fees
+    cumulativeFees
+    cumulativeVolume
+    projectTokenBalance
+    reserveTokenBalance
   }
 }
